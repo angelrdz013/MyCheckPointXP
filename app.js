@@ -13,32 +13,35 @@ const dailyPhrases = [
   "🕹️ Cada día es un nuevo nivel. ¡Presiona Start!",
   "🚀 No tienes que hacerlo perfecto. Solo avanzar.",
 ];
-const emotionalPhrases = [
-  "Recuerda que tu mente también merece un respiro.",
-  "Tu energía marca el ritmo de tu día.",
-  "Cada pausa intencional es una victoria silenciosa.",
-  "Hazlo por ti. Hazlo ahora.",
-  "Hoy es un buen día para ganar XP emocional.",
-];
 
 function random(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// Preguntas
+// --- Preguntas para cada flujo ---
 const flows = {
   inicial: [
     { key: "intencion", text: "📌 ¿Cuál es tu intención para hoy?" },
     { key: "reto", text: "🎯 ¿Cuál será tu reto personal/profesional?" }
   ],
   emocional: [
-    { key: "emocion", text: "🧠 ¿Cómo te sientes ahora?" },
+    { key: "emocion", text: "🧠 ¿Cómo te sientes ahora? (Elige un número)\n1. 😌 Bien, con energía\n2. 😐 Cansado\n3. 😫 Estresado\n4. 😔 Falta de motivación\n5. 😢 Triste\n6. 😵 Ansiedad / Tensión física" },
     { key: "razon", text: "🤔 ¿Por qué te sientes así?" },
     { key: "consejo", text: "🤝 Un amigo dice eso... ¿Qué consejo le das?" }
   ]
 };
 
-// Utilidades
+// --- Recomendaciones por emoción ---
+const emocionesMap = {
+  "1": { texto: "😌 Bien, con energía", actividad: "💪 Aprovecha tu energía para cumplir una meta importante en los próximos 30 minutos." },
+  "2": { texto: "😐 Cansado", actividad: "🌿 Da una caminata o estírate 3-5 min. Tu cuerpo lo agradecerá." },
+  "3": { texto: "😫 Estresado", actividad: "🧘 Respira profundo 3 veces y relaja tus hombros. Prioriza solo lo esencial." },
+  "4": { texto: "😔 Falta de motivación", actividad: "📝 Anota 3 tareas pequeñas que puedas lograr hoy. Elige 1 y empieza." },
+  "5": { texto: "😢 Triste", actividad: "🎵 Pon tu canción favorita y recuerda algo que te haga sonreír." },
+  "6": { texto: "😵 Ansiedad / Tensión física", actividad: "😌 Haz 1 minuto de respiración consciente. Toma un descanso sensorial." }
+};
+
+// --- Utilidades ---
 function printLine(text, color = "#0f0") {
   const line = document.createElement("div");
   line.style.color = color;
@@ -69,18 +72,31 @@ function createInput() {
       const value = input.value.trim();
       if (value !== "") {
         const question = flows[currentFlow][step];
-        answers[question.key] = value;
 
-        // reflejo especial para "razon" en emocional
-        if (question.key === "razon") {
-          printLine(`> ${value}`, "#fff");
+        // --- Caso especial: emoción con opciones ---
+        if (currentFlow === "emocional" && question.key === "emocion") {
+          if (!emocionesMap[value]) {
+            printLine("> Opción inválida. Escribe 1-6", "#f00");
+            return;
+          }
+          answers[question.key] = emocionesMap[value].texto;
+          answers["actividad"] = emocionesMap[value].actividad;
+          printLine("> " + emocionesMap[value].texto, "#fff");
+          printLine("💡 Actividad sugerida: " + emocionesMap[value].actividad, "#ff0");
+        }
+        // --- Caso especial: razón reflejada como amigo ---
+        else if (currentFlow === "emocional" && question.key === "razon") {
+          answers[question.key] = value;
+          printLine("> " + value, "#fff");
           printLine(`🤝 Un amigo dice: "Me siento ${value}"`, "#0ff");
-        } else {
+        }
+        // --- Normal ---
+        else {
+          answers[question.key] = value;
           printLine("> " + value, "#fff");
         }
 
         inputWrapper.remove();
-
         step++;
         if (step < flows[currentFlow].length) {
           askQuestion();
@@ -103,14 +119,14 @@ function finishFlow() {
     printLine("✅ ¡Check-in inicial completado!", "#0f0");
     printLine("✨ Mensaje del día: " + phrase, "#ff0");
   } else if (currentFlow === "emocional") {
-    const phrase = random(emotionalPhrases);
     printLine("✅ ¡Check-in emocional completado!", "#0f0");
-    printLine("🎲 Frase motivacional: " + phrase, "#ff0");
   }
-  printLine("💪 Bueno, pues hazlo tú!", "#0ff");
 
-  // Lanzar countdown
-  setTimeout(() => startCountdown(), 1500);
+  printLine("💪 Bueno, pues hazlo tú!", "#0ff");
+  printLine("Presiona ENTER para continuar...", "#ff0");
+
+  // Esperar Enter para lanzar countdown
+  waitForEnter(() => startCountdown());
 
   // Guardar log
   const log = {
@@ -119,6 +135,31 @@ function finishFlow() {
     date: new Date().toDateString()
   };
   localStorage.setItem("lastCheckin", JSON.stringify(log));
+}
+
+function waitForEnter(callback) {
+  const inputWrapper = document.createElement("div");
+  inputWrapper.classList.add("input-line");
+
+  const prompt = document.createElement("span");
+  prompt.classList.add("prompt");
+  prompt.textContent = "> ";
+
+  const input = document.createElement("input");
+  input.type = "text";
+  input.classList.add("console-input");
+
+  inputWrapper.appendChild(prompt);
+  inputWrapper.appendChild(input);
+  terminal.appendChild(inputWrapper);
+  input.focus();
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      inputWrapper.remove();
+      callback();
+    }
+  });
 }
 
 function startCountdown() {
@@ -136,7 +177,7 @@ function startCountdown() {
   }, 1000);
 }
 
-// Eventos
+// --- Eventos ---
 btnInicial.addEventListener("click", () => {
   resetFlow("inicial");
   askQuestion();
