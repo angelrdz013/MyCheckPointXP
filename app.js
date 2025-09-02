@@ -92,7 +92,6 @@ function createInput() {
 
           // Reimprimir confirmación
           printLine("> " + elegido.texto, "#fff");
-          printLine("💡 Actividad sugerida: " + elegido.actividad, "#ff0");
         }
         // --- Caso especial: razón reflejada como amigo ---
         else if (currentFlow === "emocional" && question.key === "razon") {
@@ -130,14 +129,9 @@ function finishFlow() {
     answers["frase"] = phrase; // guardar también
     printLine("✅ ¡Check-in inicial completado!", "#0f0");
     printLine("✨ Mensaje del día: " + phrase, "#ff0");
-  } else if (currentFlow === "emocional") {
-    printLine("✅ ¡Check-in emocional completado!", "#0f0");
-    // si hay emoción, mostrarla en el resumen
-    if (answers["emocion"] && answers["actividad"]) {
-      printLine("😌 Estado elegido: " + answers["emocion"], "#fff");
-      printLine("💡 Actividad: " + answers["actividad"], "#ff0");
     }
   }
+  printLine("✅ ¡Check-in emocional completado!", "#0f0");
   printLine("Presiona ENTER para continuar...", "#ff0");
 
   // Esperar Enter para lanzar countdown
@@ -186,7 +180,7 @@ function startCountdown() {
     if (count > 0) {
       terminal.innerHTML = `<div class="countdown-big">${count}</div>`;
     } else if (count === 0) {
-      terminal.innerHTML = `<div class="countdown-big">🚀 ¡Vamos!</div>`;
+      terminal.innerHTML = `<div class="countdown-big">🚀¡Vamos tu Puedes!</div>`;
     } else {
       clearInterval(interval);
     }
