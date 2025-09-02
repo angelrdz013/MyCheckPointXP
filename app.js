@@ -1,8 +1,10 @@
 const terminal = document.getElementById("terminal");
-const startBtn = document.getElementById("startCheckin");
+const btnInicial = document.getElementById("startInicial");
+const btnEmocional = document.getElementById("startEmocional");
 
 let step = 0;
 let answers = {};
+let currentFlow = "";
 
 const dailyPhrases = [
   "🎯 Hoy también cuenta.",
@@ -23,15 +25,20 @@ function random(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-const questions = [
-  { key: "intencion", text: "📌 ¿Cuál es tu intención para hoy?" },
-  { key: "reto", text: "🎯 ¿Cuál será tu reto personal/profesional?" },
-  { key: "emocion", text: "🧠 ¿Cómo te sientes ahora?" },
-  { key: "razon", text: "🤔 ¿Por qué te sientes así?" },
-  { key: "consejo", text: "🤝 Un amigo dice eso... ¿Qué consejo le das?" }
-];
+// Preguntas
+const flows = {
+  inicial: [
+    { key: "intencion", text: "📌 ¿Cuál es tu intención para hoy?" },
+    { key: "reto", text: "🎯 ¿Cuál será tu reto personal/profesional?" }
+  ],
+  emocional: [
+    { key: "emocion", text: "🧠 ¿Cómo te sientes ahora?" },
+    { key: "razon", text: "🤔 ¿Por qué te sientes así?" },
+    { key: "consejo", text: "🤝 Un amigo dice eso... ¿Qué consejo le das?" }
+  ]
+};
 
-// --- Utilidades ---
+// Utilidades
 function printLine(text, color = "#0f0") {
   const line = document.createElement("div");
   line.style.color = color;
@@ -61,17 +68,24 @@ function createInput() {
     if (e.key === "Enter") {
       const value = input.value.trim();
       if (value !== "") {
-        answers[questions[step].key] = value;
+        const question = flows[currentFlow][step];
+        answers[question.key] = value;
 
-        // Imprimir como output
-        printLine("> " + value, "#fff");
+        // reflejo especial para "razon" en emocional
+        if (question.key === "razon") {
+          printLine(`> ${value}`, "#fff");
+          printLine(`🤝 Un amigo dice: "Me siento ${value}"`, "#0ff");
+        } else {
+          printLine("> " + value, "#fff");
+        }
+
         inputWrapper.remove();
 
         step++;
-        if (step < questions.length) {
+        if (step < flows[currentFlow].length) {
           askQuestion();
         } else {
-          finishCheckin();
+          finishFlow();
         }
       }
     }
@@ -79,41 +93,64 @@ function createInput() {
 }
 
 function askQuestion() {
-  printLine(questions[step].text, "#0ff");
+  printLine(flows[currentFlow][step].text, "#0ff");
   createInput();
 }
 
-function finishCheckin() {
-  const phraseDaily = random(dailyPhrases);
-  const phraseEmo = random(emotionalPhrases);
-
-  printLine("✅ ¡Check-in completado!", "#0f0");
-  printLine("✨ Mensaje del día: " + phraseDaily, "#ff0");
-  printLine("🎲 Frase motivacional: " + phraseEmo, "#ff0");
+function finishFlow() {
+  if (currentFlow === "inicial") {
+    const phrase = random(dailyPhrases);
+    printLine("✅ ¡Check-in inicial completado!", "#0f0");
+    printLine("✨ Mensaje del día: " + phrase, "#ff0");
+  } else if (currentFlow === "emocional") {
+    const phrase = random(emotionalPhrases);
+    printLine("✅ ¡Check-in emocional completado!", "#0f0");
+    printLine("🎲 Frase motivacional: " + phrase, "#ff0");
+  }
   printLine("💪 Bueno, pues hazlo tú!", "#0ff");
 
-  // Countdown aparte
-  let count = 5;
-  const interval = setInterval(() => {
-    printLine(count > 0 ? count : "🚀 ¡Vamos!", "#ff0");
-    count--;
-    if (count < 0) clearInterval(interval);
-  }, 1000);
+  // Lanzar countdown
+  setTimeout(() => startCountdown(), 1500);
 
-  // Guardar en localStorage
+  // Guardar log
   const log = {
     ...answers,
-    phraseDaily,
-    phraseEmo,
+    flow: currentFlow,
     date: new Date().toDateString()
   };
   localStorage.setItem("lastCheckin", JSON.stringify(log));
 }
 
-startBtn.addEventListener("click", () => {
+function startCountdown() {
+  terminal.innerHTML = "";
+  let count = 5;
+  const interval = setInterval(() => {
+    if (count > 0) {
+      terminal.innerHTML = `<div class="countdown-big">${count}</div>`;
+    } else if (count === 0) {
+      terminal.innerHTML = `<div class="countdown-big">🚀 ¡Vamos!</div>`;
+    } else {
+      clearInterval(interval);
+    }
+    count--;
+  }, 1000);
+}
+
+// Eventos
+btnInicial.addEventListener("click", () => {
+  resetFlow("inicial");
+  askQuestion();
+});
+
+btnEmocional.addEventListener("click", () => {
+  resetFlow("emocional");
+  askQuestion();
+});
+
+function resetFlow(flow) {
   terminal.innerHTML = "";
   terminal.classList.remove("hidden");
   step = 0;
   answers = {};
-  askQuestion();
-});
+  currentFlow = flow;
+}
