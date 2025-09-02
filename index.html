@@ -3,35 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MyCheckPointXP</title>
+  <title>MyCheckPointXP CLI</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>👾 MyCheckPointXP 🎮</h1>
-  <p>Bienvenido a tu arcade de productividad. 🕹️</p>
-  
-  <button id="checkinBtn">⚡ Hacer Check-In</button>
-  <button id="snoozeBtn">💤 Snooze (30 min)</button>
-  
-  <p id="status">💾 Listo para iniciar...</p>
+  <p>Arcade Productivity Terminal</p>
 
-  <!-- Modal Check-in -->
-  <div id="modalCheckin" class="modal">
-    <div class="modal-content">
-      <h2 id="modalTitle">🌟 Check-In</h2>
-      <div id="modalBody"></div>
-      <button id="closeCheckin">🕹️ Cerrar</button>
-    </div>
-  </div>
+  <button id="startCheckin">⚡ Iniciar Check-In</button>
 
-  <!-- Modal Countdown -->
-  <div id="modalCountdown" class="modal">
-    <div class="modal-content" style="text-align:center;">
-      <h2>⏳ Cuenta regresiva</h2>
-      <div id="countdown" class="countdown"></div>
-    </div>
-  </div>
+  <!-- Terminal retro -->
+  <div id="terminal" class="terminal hidden"></div>
 
-  <script src="app.js"></script>
+  <script src="cli.js"></script>
 </body>
 </html>
