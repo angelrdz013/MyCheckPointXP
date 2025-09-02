@@ -1,7 +1,9 @@
-let snoozeCount = 0;
-const maxSnoozes = 2;
+const terminal = document.getElementById("terminal");
+const startBtn = document.getElementById("startCheckin");
 
-// --- Frases ---
+let step = 0;
+let answers = {};
+
 const dailyPhrases = [
   "🎯 Hoy también cuenta.",
   "💪 Tu disciplina le está ganando al caos.",
@@ -16,162 +18,102 @@ const emotionalPhrases = [
   "Hazlo por ti. Hazlo ahora.",
   "Hoy es un buen día para ganar XP emocional.",
 ];
-function random(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-// --- Modales ---
-const modalCheckin = document.getElementById("modalCheckin");
-const modalCountdown = document.getElementById("modalCountdown");
-const modalTitle = document.getElementById("modalTitle");
-const modalBody = document.getElementById("modalBody");
-const countdownEl = document.getElementById("countdown");
-
-function openCheckin(title, html) {
-  modalTitle.textContent = title;
-  modalBody.innerHTML = html;
-  modalCheckin.style.display = "flex";
-}
-function closeCheckin() {
-  modalCheckin.style.display = "none";
-}
-document.getElementById("closeCheckin").addEventListener("click", () => {
-  closeCheckin();
-  startCountdown();
-});
-
-function openCountdown() {
-  modalCountdown.style.display = "flex";
-}
-function closeCountdown() {
-  modalCountdown.style.display = "none";
+function random(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// --- Check-in inicial ---
-function dailyCheckin() {
-  const phrase = random(dailyPhrases);
-  const form = `
-    <p>✨ Mensaje del día: ${phrase}</p>
-    <label>📌 Tu intención:<br><input id="intencion"></label><br>
-    <label>🎯 Tu reto:<br><input id="reto"></label><br>
-    <button onclick="saveDaily()">✅ Guardar</button>
-  `;
-  openCheckin("🌅 Check-in inicial", form);
-  localStorage.setItem("dailyPhrase", phrase);
+const questions = [
+  { key: "intencion", text: "📌 ¿Cuál es tu intención para hoy?" },
+  { key: "reto", text: "🎯 ¿Cuál será tu reto personal/profesional?" },
+  { key: "emocion", text: "🧠 ¿Cómo te sientes ahora?" },
+  { key: "razon", text: "🤔 ¿Por qué te sientes así?" },
+  { key: "consejo", text: "🤝 Un amigo dice eso... ¿Qué consejo le das?" }
+];
+
+// --- Utilidades ---
+function printLine(text, color = "#0f0") {
+  const line = document.createElement("div");
+  line.style.color = color;
+  line.textContent = text;
+  terminal.appendChild(line);
+  terminal.scrollTop = terminal.scrollHeight;
 }
 
-window.saveDaily = function() {
-  const intention = document.getElementById("intencion").value;
-  const challenge = document.getElementById("reto").value;
-  const phrase = localStorage.getItem("dailyPhrase");
-  localStorage.setItem("dailyCheckin", JSON.stringify({intention, challenge, phrase, date: new Date().toDateString()}));
-  modalBody.innerHTML = `
-    <p>✅ Intención: ${intention}</p>
-    <p>🎯 Reto: ${challenge}</p>
-    <p>✨ ${phrase}</p>
-    <p style="color:#0ff; margin-top:10px;">💪 Bueno, pues hazlo tú!</p>
-  `;
-  document.getElementById("status").textContent = "✅ Check-in inicial registrado.";
-};
+function createInput() {
+  const inputWrapper = document.createElement("div");
+  inputWrapper.classList.add("input-line");
 
-// --- Check-in emocional ---
-function emotionalCheckin() {
-  const phrase = random(emotionalPhrases);
-  const form = `
-    <p>🧠 ¿Cómo te sientes ahora?</p>
-    <select id="emocion">
-      <option value="😌 Bien, con energía">😌 Bien, con energía</option>
-      <option value="😐 Cansado">😐 Cansado</option>
-      <option value="😫 Estresado">😫 Estresado</option>
-      <option value="😔 Falta de motivación">😔 Falta de motivación</option>
-      <option value="😢 Triste">😢 Triste</option>
-      <option value="😵 Ansiedad / Tensión física">😵 Ansiedad / Tensión física</option>
-    </select><br>
+  const prompt = document.createElement("span");
+  prompt.classList.add("prompt");
+  prompt.textContent = "> ";
 
-    <p>🤔 ¿Por qué te sientes así?</p>
-    <textarea id="razon" oninput="reflectAmigo()"></textarea><br>
+  const input = document.createElement("input");
+  input.type = "text";
+  input.classList.add("console-input");
 
-    <p id="amigoReflejo" style="color:#0ff; font-style:italic;"></p>
+  inputWrapper.appendChild(prompt);
+  inputWrapper.appendChild(input);
+  terminal.appendChild(inputWrapper);
+  input.focus();
 
-    <p>🧠 ¿Qué consejo le darías a tu amigo?</p>
-    <textarea id="consejo"></textarea><br>
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const value = input.value.trim();
+      if (value !== "") {
+        answers[questions[step].key] = value;
 
-    <button onclick="saveEmo()">✅ Guardar</button>
-  `;
-  openCheckin("⏰ Check-in emocional", form);
-  localStorage.setItem("emoPhrase", phrase);
-}
+        // Imprimir como output
+        printLine("> " + value, "#fff");
+        inputWrapper.remove();
 
-window.reflectAmigo = function() {
-  const razon = document.getElementById("razon").value;
-  const amigoReflejo = document.getElementById("amigoReflejo");
-  if (razon.trim() !== "") {
-    amigoReflejo.textContent = `🤝 Un amigo dice: "${razon}"`;
-  } else {
-    amigoReflejo.textContent = "";
-  }
-};
-
-window.saveEmo = function() {
-  const emocion = document.getElementById("emocion").value;
-  const razon = document.getElementById("razon").value;
-  const consejo = document.getElementById("consejo").value;
-  const phrase = localStorage.getItem("emoPhrase");
-
-  modalBody.innerHTML = `
-    <p>Estado: ${emocion}</p>
-    <p>Amigo: "Me siento ${razon}"</p>
-    <p>Consejo: ${consejo}</p>
-    <p>🎲 Frase: ${phrase}</p>
-    <p>🚀 +2 XP desbloqueados</p>
-    <p style="color:#0ff; margin-top:10px;">💪 Bueno, pues hazlo tú!</p>
-  `;
-
-  document.getElementById("status").textContent = "✅ Check-in emocional completado.";
-};
-
-// --- Countdown ---
-function startCountdown() {
-  openCountdown();
-  let count = 5;
-  countdownEl.textContent = count;
-  const interval = setInterval(() => {
-    count--;
-    countdownEl.textContent = count > 0 ? count : "🚀 ¡Vamos!";
-    if (count < 0) {
-      clearInterval(interval);
-      closeCountdown();
+        step++;
+        if (step < questions.length) {
+          askQuestion();
+        } else {
+          finishCheckin();
+        }
+      }
     }
-  }, 1000);
+  });
 }
 
-// --- Snooze ---
-document.getElementById("snoozeBtn").addEventListener("click", () => {
-  if (snoozeCount < maxSnoozes) {
-    snoozeCount++;
-    document.getElementById("status").textContent =
-      `⏰ Check-in pospuesto 30 min. (Snooze ${snoozeCount}/${maxSnoozes})`;
-    setTimeout(emotionalCheckin, 30 * 60 * 1000);
-  } else {
-    emotionalCheckin();
-  }
-});
+function askQuestion() {
+  printLine(questions[step].text, "#0ff");
+  createInput();
+}
 
-// --- Botones principales ---
-document.getElementById("checkinBtn").addEventListener("click", () => {
-  const log = localStorage.getItem("dailyCheckin");
-  if (!log || JSON.parse(log).date !== new Date().toDateString()) {
-    dailyCheckin();
-  } else {
-    emotionalCheckin();
-  }
-});
+function finishCheckin() {
+  const phraseDaily = random(dailyPhrases);
+  const phraseEmo = random(emotionalPhrases);
 
-// --- Auto check-in inicial ---
-window.onload = () => {
-  const log = localStorage.getItem("dailyCheckin");
-  if (!log || JSON.parse(log).date !== new Date().toDateString()) {
-    dailyCheckin();
-  } else {
-    document.getElementById("status").textContent = "✅ Check-in inicial ya registrado.";
-    setInterval(emotionalCheckin, 2 * 60 * 60 * 1000);
-  }
-};
+  printLine("✅ ¡Check-in completado!", "#0f0");
+  printLine("✨ Mensaje del día: " + phraseDaily, "#ff0");
+  printLine("🎲 Frase motivacional: " + phraseEmo, "#ff0");
+  printLine("💪 Bueno, pues hazlo tú!", "#0ff");
+
+  // Countdown aparte
+  let count = 5;
+  const interval = setInterval(() => {
+    printLine(count > 0 ? count : "🚀 ¡Vamos!", "#ff0");
+    count--;
+    if (count < 0) clearInterval(interval);
+  }, 1000);
+
+  // Guardar en localStorage
+  const log = {
+    ...answers,
+    phraseDaily,
+    phraseEmo,
+    date: new Date().toDateString()
+  };
+  localStorage.setItem("lastCheckin", JSON.stringify(log));
+}
+
+startBtn.addEventListener("click", () => {
+  terminal.innerHTML = "";
+  terminal.classList.remove("hidden");
+  step = 0;
+  answers = {};
+  askQuestion();
+});
