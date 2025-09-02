@@ -2,247 +2,64 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MyCheckPointXP</title>
-
-  <!-- ====== ESTILOS (tema arcade/terminal) ====== -->
-  <style>
-    :root{
-      --bg:#000;
-      --fg:#00ffcc;    /* verde neón */
-      --accent:#ff00ff;/* fucsia neón */
-      --white:#fff;
-      --muted:#ccc;
-    }
-    html,body{height:100%;}
-    body{
-      font-family:"Courier New",monospace;
-      display:flex;align-items:center;justify-content:center;
-      background:var(--bg); color:var(--fg);
-      margin:0; padding:40px 12px;
-    }
-    .wrap{
-      width:100%; max-width:650px; text-align:center;
-    }
-    h1{
-      color:var(--white);
-      text-shadow:0 0 5px var(--fg), 0 0 12px var(--fg);
-      font-size:28px; margin:0 0 8px;
-    }
-    p.lead{color:var(--muted); margin:0 0 20px;}
-    .btns{margin:16px 0 8px;}
-    button{
-      padding:12px 20px; margin:8px;
-      border:2px solid var(--fg);
-      border-radius:8px;
-      background:#111; color:var(--fg);
-      cursor:pointer; font-size:16px;
-      font-family:"Courier New",monospace;
-      text-shadow:0 0 5px var(--fg);
-      transition:all .2s ease-in-out;
-    }
-    button:hover{ background:var(--fg); color:#000; text-shadow:none; }
-    #status{
-      margin-top:14px; font-size:18px; color:var(--white);
-      text-shadow:0 0 5px var(--accent);
-      animation:blink 1s infinite;
-      min-height:24px;
-    }
-    @keyframes blink{50%{opacity:.6}}
-
-    /* Modal estilo terminal */
-    .modal{
-      display:none; position:fixed; inset:0;
-      background:rgba(0,0,0,.9); z-index:999;
-      padding:24px;
-    }
-    .modal-card{
-      margin:0 auto; max-width:520px;
-      background:#000; color:#fff;
-      border:2px solid var(--fg);
-      border-radius:10px;
-      padding:20px;
-      text-align:center;
-      box-shadow:0 0 10px var(--accent), inset 0 0 12px rgba(0,255,204,.2);
-    }
-    .modal h2{
-      margin:0 0 12px; color:var(--fg);
-      text-shadow:0 0 6px var(--fg), 0 0 10px var(--accent);
-    }
-    .modal p{margin:8px 0; color:#e6fff9;}
-    .modal .actions{margin-top:14px;}
-    .modal .actions button{
-      border-color:var(--accent); color:var(--accent); background:#000;
-      text-shadow:0 0 5px var(--accent);
-    }
-    .modal .actions button:hover{
-      background:var(--accent); color:#000; text-shadow:none;
-    }
-
-    /* tarjetita de XP */
-    .hud{
-      display:inline-block; margin-top:10px; padding:8px 12px;
-      border:2px dashed var(--fg); border-radius:10px; color:#eafffb;
-      background:rgba(0,255,204,.06);
-    }
-  </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>👾 MyCheckPointXP 🎮</h1>
-    <p class="lead">Bienvenido a tu arcade de productividad. 🕹️</p>
+  <h1>🌟 MyCheckPointXP</h1>
+  <p>Activa tus notificaciones para comenzar.</p>
+  <button id="requestPermission">🔔 Activar Notificaciones</button>
+  <div id="messages"></div>
 
-    <div class="btns">
-      <button id="checkinBtn">⚡ Hacer Check-In</button>
-      <button id="snoozeBtn">💤 Snooze (30 min)</button>
-    </div>
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 
-    <div class="hud">XP total: <span id="xp">0</span></div>
-    <p id="status">💾 Listo para iniciar…</p>
-  </div>
+    // Configuración de tu proyecto Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDZ3y4u7EyL-0nBJ-ILFbQk7tUsIVku6Yk",
+      authDomain: "mycheckpointxp.firebaseapp.com",
+      projectId: "mycheckpointxp",
+      storageBucket: "mycheckpointxp.firebasestorage.app",
+      messagingSenderId: "507163687345",
+      appId: "1:507163687345:web:8f8df77bd12d028cca6590"
+    };
 
-  <!-- ====== MODAL ====== -->
-  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <div class="modal-card">
-      <h2 id="modalTitle">🌟 Check-In</h2>
-      <p id="modalMessage"></p>
-      <p id="modalExtra"></p>
-      <div class="actions">
-        <button id="closeModal">🕹️ Cerrar</button>
-      </div>
-    </div>
-  </div>
+    // Inicializar Firebase
+    const app = initializeApp(firebaseConfig);
+    const messaging = getMessaging(app);
 
-  <!-- ====== LÓGICA JS ====== -->
-  <script>
-    "use strict";
+    const requestBtn = document.getElementById("requestPermission");
+    const messagesDiv = document.getElementById("messages");
 
-    // Estado básico
-    let xp = 0;
-    let snoozeCount = 0; // máx 2 snoozes
-
-    // Elementos
-    const $ = (sel)=>document.querySelector(sel);
-    const checkinBtn = $("#checkinBtn");
-    const snoozeBtn  = $("#snoozeBtn");
-    const statusEl   = $("#status");
-    const xpEl       = $("#xp");
-
-    const modal      = $("#modal");
-    const modalTitle = $("#modalTitle");
-    const modalMsg   = $("#modalMessage");
-    const modalExtra = $("#modalExtra");
-    const closeModal = $("#closeModal");
-
-    // Frases/actividades estilo EmoCoach
-    const frasesEGO = [
-      "Tu mente dice: «mejor después»… pero tú mandas.",
-      "El EGO quiere que pares, pero tú puedes más.",
-      "No necesitas motivación: solo acción ahora.",
-      "Haz una cosa +1 y estarás en marcha."
-    ];
-    const actividades = [
-      "Respira profundo 3 veces.",
-      "Levántate y estírate 1 minuto.",
-      "Toma agua y camina 5 pasos.",
-      "Escribe una idea rápida en tu libreta.",
-      "Mueve hombros/cuello 30 segundos."
-    ];
-
-    // Helpers
-    function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-    function updateXP(){ xpEl.textContent = xp; }
-
-    // Notificaciones con fallback seguro
-    function requestNotifPermission() {
-      if (!("Notification" in window)) return;
-      if (Notification.permission === "default") {
-        try { Notification.requestPermission(); } catch(e){}
-      }
-    }
-    function notifyUser(title, body){
-      if (!("Notification" in window)) return;
-      if (Notification.permission === "granted") {
-        try { new Notification(title, { body }); } catch(e){}
-      }
-    }
-
-    // Modal
-    function openModal(){ modal.style.display = "block"; }
-    function closeModalFn(){ modal.style.display = "none"; }
-    closeModal.addEventListener("click", closeModalFn);
-    modal.addEventListener("click", (e)=>{ if(e.target===modal) closeModalFn(); });
-
-    // Flujo de Check-In completo
-    function startCheckInFlow(){
-      requestNotifPermission();
-
-      const frase = rand(frasesEGO);
-      const act   = rand(actividades);
-
-      // Paso 1: mensaje positivo
-      openModal();
-      modalTitle.textContent = "🌟 Inicio positivo";
-      modalMsg.textContent   = "Momento de cuidarte. Cada acción cuenta. 💪";
-      modalExtra.textContent = "";
-
-      // Paso 2: EGO + actividad
-      setTimeout(()=>{
-        modalTitle.textContent = "🧠 Tu EGO habla…";
-        modalMsg.textContent   = frase;
-        modalExtra.textContent = "Sugerencia: " + act;
-
-        // Paso 3: cuenta regresiva 5→1
-        let count = 5;
-        modalTitle.textContent = "⏳ Cuenta regresiva";
-        modalMsg.textContent   = String(count);
-
-        const tick = setInterval(()=>{
-          count--;
-          if(count > 0){
-            modalMsg.textContent = String(count);
+    requestBtn.addEventListener("click", async () => {
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+          const token = await getToken(messaging, {
+            vapidKey: "BNMM1jL2a-fIhho1pv2NacM5lQHfKT06yB6NjHbsi0Uh1g62LjQ6BCp-tieWa81kCuD-uVnEF1Z-z71tgah0pJA"
+          });
+          if (token) {
+            console.log("🔑 Token de este navegador:", token);
+            messagesDiv.textContent = "Notificaciones activadas ✔️ Token: " + token;
           } else {
-            clearInterval(tick);
-            // Paso 4: GO + sumar XP
-            modalTitle.textContent = "🔥 ¡Acción!";
-            modalMsg.textContent   = "5,4,3,2,1… ¡GO!";
-            modalExtra.textContent = "¡Lo lograste! +5 XP 🎯";
-            xp += 5;
-            updateXP();
-            statusEl.textContent = "✅ Check-in registrado. ¡Bien ahí, jugador!";
-            notifyUser("Check-In completado", "Ganaste 5 XP. Sigue sumando 🕹️");
+            messagesDiv.textContent = "No se pudo generar token 😕";
           }
-        }, 1000);
-      }, 1200);
-    }
-
-    // Snooze
-    function snooze(){
-      requestNotifPermission();
-      if (snoozeCount < 2) {
-        snoozeCount++;
-        statusEl.textContent = `⏸ Snooze (30 min). Usados: ${snoozeCount}/2`;
-        notifyUser("Snooze activado", "Te recordamos en 30 minutos.");
-        setTimeout(showCheckInNotification, 30*60*1000);
-      } else {
-        statusEl.textContent = "⚠️ Límite de snoozes alcanzado. Haz tu check-in.";
-        notifyUser("Límite alcanzado", "Ya no puedes posponer, ¡vamos a la acción!");
+        } else {
+          messagesDiv.textContent = "Permiso de notificación denegado ❌";
+        }
+      } catch (err) {
+        console.error("Error activando notificaciones:", err);
+        messagesDiv.textContent = "Error al activar notificaciones";
       }
-    }
+    });
 
-    // Recordatorios
-    function showCheckInNotification(){
-      notifyUser("⏰ Hora de tu Check-In", "¿Ya cumpliste tu hábito?");
-    }
-    // Cada 2 horas
-    setInterval(showCheckInNotification, 2*60*60*1000);
-
-    // Eventos
-    checkinBtn.addEventListener("click", startCheckInFlow);
-    snoozeBtn .addEventListener("click", snooze);
-
-    // Estado inicial
-    updateXP();
+    // Manejar mensajes en primer plano
+    onMessage(messaging, (payload) => {
+      console.log("📩 Mensaje recibido:", payload);
+      alert(`🔔 ${payload.notification.title}: ${payload.notification.body}`);
+    });
   </script>
 </body>
 </html>
