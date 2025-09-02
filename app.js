@@ -1,4 +1,3 @@
-// --- Estado ---
 let snoozeCount = 0;
 const maxSnoozes = 2;
 
@@ -19,21 +18,32 @@ const emotionalPhrases = [
 ];
 function random(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-// --- Modal ---
-const modal = document.getElementById("modal");
+// --- Modales ---
+const modalCheckin = document.getElementById("modalCheckin");
+const modalCountdown = document.getElementById("modalCountdown");
 const modalTitle = document.getElementById("modalTitle");
 const modalBody = document.getElementById("modalBody");
 const countdownEl = document.getElementById("countdown");
-const closeModalBtn = document.getElementById("closeModal");
 
-function openModal(title, html) {
+function openCheckin(title, html) {
   modalTitle.textContent = title;
   modalBody.innerHTML = html;
-  countdownEl.textContent = "";
-  modal.style.display = "flex";
+  modalCheckin.style.display = "flex";
 }
-function closeModal() { modal.style.display = "none"; }
-closeModalBtn.addEventListener("click", closeModal);
+function closeCheckin() {
+  modalCheckin.style.display = "none";
+}
+document.getElementById("closeCheckin").addEventListener("click", () => {
+  closeCheckin();
+  startCountdown();
+});
+
+function openCountdown() {
+  modalCountdown.style.display = "flex";
+}
+function closeCountdown() {
+  modalCountdown.style.display = "none";
+}
 
 // --- Check-in inicial ---
 function dailyCheckin() {
@@ -44,7 +54,7 @@ function dailyCheckin() {
     <label>🎯 Tu reto:<br><input id="reto"></label><br>
     <button onclick="saveDaily()">✅ Guardar</button>
   `;
-  openModal("🌅 Check-in inicial", form);
+  openCheckin("🌅 Check-in inicial", form);
   localStorage.setItem("dailyPhrase", phrase);
 }
 
@@ -57,6 +67,7 @@ window.saveDaily = function() {
     <p>✅ Intención: ${intention}</p>
     <p>🎯 Reto: ${challenge}</p>
     <p>✨ ${phrase}</p>
+    <p style="color:#0ff; margin-top:10px;">💪 Bueno, pues hazlo tú!</p>
   `;
   document.getElementById("status").textContent = "✅ Check-in inicial registrado.";
 };
@@ -85,22 +96,20 @@ function emotionalCheckin() {
 
     <button onclick="saveEmo()">✅ Guardar</button>
   `;
-  openModal("⏰ Check-in emocional", form);
+  openCheckin("⏰ Check-in emocional", form);
   localStorage.setItem("emoPhrase", phrase);
 }
 
-// --- Reflejo de "Amigo" ---
 window.reflectAmigo = function() {
   const razon = document.getElementById("razon").value;
   const amigoReflejo = document.getElementById("amigoReflejo");
   if (razon.trim() !== "") {
-    amigoReflejo.textContent = `🤝 Un amigo dice: "${razon}"`;
+    amigoReflejo.textContent = `🤝 Un amigo dice: "Me siento ${razon}"`;
   } else {
     amigoReflejo.textContent = "";
   }
 };
 
-// --- Guardar Check-in emocional ---
 window.saveEmo = function() {
   const emocion = document.getElementById("emocion").value;
   const razon = document.getElementById("razon").value;
@@ -113,22 +122,23 @@ window.saveEmo = function() {
     <p>Consejo: ${consejo}</p>
     <p>🎲 Frase: ${phrase}</p>
     <p>🚀 +2 XP desbloqueados</p>
+    <p style="color:#0ff; margin-top:10px;">💪 Bueno, pues hazlo tú!</p>
   `;
 
-  startCountdown();
   document.getElementById("status").textContent = "✅ Check-in emocional completado.";
 };
 
-// --- Cuenta regresiva estilo arcade ---
+// --- Countdown ---
 function startCountdown() {
+  openCountdown();
   let count = 5;
   countdownEl.textContent = count;
   const interval = setInterval(() => {
     count--;
     countdownEl.textContent = count > 0 ? count : "🚀 ¡Vamos!";
-    if (count <= 0) {
+    if (count < 0) {
       clearInterval(interval);
-      modalBody.innerHTML += `<p style="color:#0ff; margin-top:10px;">💪 Bueno, pues hazlo tú!</p>`;
+      closeCountdown();
     }
   }, 1000);
 }
@@ -155,7 +165,7 @@ document.getElementById("checkinBtn").addEventListener("click", () => {
   }
 });
 
-// --- Auto check-in inicial al cargar ---
+// --- Auto check-in inicial ---
 window.onload = () => {
   const log = localStorage.getItem("dailyCheckin");
   if (!log || JSON.parse(log).date !== new Date().toDateString()) {
