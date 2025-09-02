@@ -125,10 +125,16 @@ function askQuestion() {
 function finishFlow() {
   if (currentFlow === "inicial") {
     const phrase = random(dailyPhrases);
+    answers["frase"] = phrase; // guardar también
     printLine("✅ ¡Check-in inicial completado!", "#0f0");
     printLine("✨ Mensaje del día: " + phrase, "#ff0");
   } else if (currentFlow === "emocional") {
     printLine("✅ ¡Check-in emocional completado!", "#0f0");
+    // si hay emoción, mostrarla en el resumen
+    if (answers["emocion"] && answers["actividad"]) {
+      printLine("😌 Estado elegido: " + answers["emocion"], "#fff");
+      printLine("💡 Actividad: " + answers["actividad"], "#ff0");
+    }
   }
 
   printLine("💪 Bueno, pues hazlo tú!", "#0ff");
@@ -137,13 +143,15 @@ function finishFlow() {
   // Esperar Enter para lanzar countdown
   waitForEnter(() => startCountdown());
 
-  // Guardar log
+  // Guardar log (acumular historial en localStorage)
+  let logs = JSON.parse(localStorage.getItem("checkinLogs")) || [];
   const log = {
     ...answers,
     flow: currentFlow,
-    date: new Date().toDateString()
+    date: new Date().toLocaleString()
   };
-  localStorage.setItem("lastCheckin", JSON.stringify(log));
+  logs.push(log);
+  localStorage.setItem("checkinLogs", JSON.stringify(logs));
 }
 
 function waitForEnter(callback) {
