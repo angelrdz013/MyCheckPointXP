@@ -25,7 +25,17 @@ const flows = {
     { key: "reto", text: "🎯 ¿Cuál será tu reto personal/profesional?" }
   ],
   emocional: [
-    { key: "emocion", text: "🧠 ¿Cómo te sientes ahora? (Elige un número)\n1. 😌 Bien, con energía\n2. 😐 Cansado\n3. 😫 Estresado\n4. 😔 Falta de motivación\n5. 😢 Triste\n6. 😵 Ansiedad / Tensión física" },
+    { 
+      key: "emocion", 
+      text: `🧠 ¿Cómo te sientes ahora? (Escribe un número)
+
+1. 😌 Bien, con energía
+2. 😐 Cansado
+3. 😫 Estresado
+4. 😔 Falta de motivación
+5. 😢 Triste
+6. 😵 Ansiedad / Tensión física`
+    },
     { key: "razon", text: "🤔 ¿Por qué te sientes así?" },
     { key: "consejo", text: "🤝 Un amigo dice eso... ¿Qué consejo le das?" }
   ]
