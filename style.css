@@ -44,3 +44,12 @@ button:hover {
   color: #0f0;
   margin-right: 5px;
 }
+
+input.console-input {
+  background: black;
+  color: #0f0;
+  border: none;
+  outline: none;
+  flex: 1;
+  font-family: inherit;
+}
