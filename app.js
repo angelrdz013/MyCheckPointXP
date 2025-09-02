@@ -94,7 +94,7 @@ window.reflectAmigo = function() {
   const razon = document.getElementById("razon").value;
   const amigoReflejo = document.getElementById("amigoReflejo");
   if (razon.trim() !== "") {
-    amigoReflejo.textContent = `🤝 Un amigo dice: "Me siento ${razon}"`;
+    amigoReflejo.textContent = `🤝 Un amigo dice: "${razon}"`;
   } else {
     amigoReflejo.textContent = "";
   }
