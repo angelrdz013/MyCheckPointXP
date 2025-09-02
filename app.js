@@ -51,7 +51,8 @@ const emocionesMap = {
 function printLine(text, color = "#0f0") {
   const line = document.createElement("div");
   line.style.color = color;
-  line.textContent = text;
+  // Reemplazar saltos de línea por <br> para mantener formato
+  line.innerHTML = text.replace(/\n/g, "<br>");
   terminal.appendChild(line);
   terminal.scrollTop = terminal.scrollHeight;
 }
