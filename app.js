@@ -1,66 +1,147 @@
-body {
-  background: #000;
-  color: #0f0;
-  font-family: "Courier New", monospace;
-  text-align: center;
-  padding: 20px;
+// --- Estado ---
+let snoozeCount = 0;
+const maxSnoozes = 2;
+
+// --- Frases ---
+const dailyPhrases = [
+  "🎯 Hoy también cuenta.",
+  "💪 Tu disciplina le está ganando al caos.",
+  "🧘‍♀️ Tu mente es tu casa. Límpiala con intención.",
+  "🕹️ Cada día es un nuevo nivel. ¡Presiona Start!",
+  "🚀 No tienes que hacerlo perfecto. Solo avanzar.",
+];
+const emotionalPhrases = [
+  "Recuerda que tu mente también merece un respiro.",
+  "Tu energía marca el ritmo de tu día.",
+  "Cada pausa intencional es una victoria silenciosa.",
+  "Hazlo por ti. Hazlo ahora.",
+  "Hoy es un buen día para ganar XP emocional.",
+];
+function random(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// --- Modal ---
+const modal = document.getElementById("modal");
+const modalTitle = document.getElementById("modalTitle");
+const modalBody = document.getElementById("modalBody");
+const countdownEl = document.getElementById("countdown");
+const closeModalBtn = document.getElementById("closeModal");
+
+function openModal(title, html) {
+  modalTitle.textContent = title;
+  modalBody.innerHTML = html;
+  countdownEl.textContent = "";
+  modal.style.display = "flex";
+}
+function closeModal() { modal.style.display = "none"; }
+closeModalBtn.addEventListener("click", closeModal);
+
+// --- Check-in inicial ---
+function dailyCheckin() {
+  const phrase = random(dailyPhrases);
+  const form = `
+    <p>✨ Mensaje del día: ${phrase}</p>
+    <label>📌 Tu intención: <br><input id="intencion"></label><br>
+    <label>🎯 Tu reto: <br><input id="reto"></label><br>
+    <button onclick="saveDaily()">✅ Guardar</button>
+  `;
+  openModal("🌅 Check-in inicial", form);
+  localStorage.setItem("dailyPhrase", phrase);
 }
 
-button {
-  background: #111;
-  color: #0f0;
-  border: 2px solid #0f0;
-  padding: 10px 20px;
-  margin: 10px;
-  cursor: pointer;
-  border-radius: 8px;
-  text-transform: uppercase;
-  box-shadow: 0 0 10px #0f0;
+window.saveDaily = function() {
+  const intention = document.getElementById("intencion").value;
+  const challenge = document.getElementById("reto").value;
+  const phrase = localStorage.getItem("dailyPhrase");
+  localStorage.setItem("dailyCheckin", JSON.stringify({intention, challenge, phrase, date: new Date().toDateString()}));
+  modalBody.innerHTML = `
+    <p>✅ Intención: ${intention}</p>
+    <p>🎯 Reto: ${challenge}</p>
+    <p>✨ ${phrase}</p>
+  `;
+  document.getElementById("status").textContent = "✅ Check-in inicial registrado.";
+};
+
+// --- Check-in emocional ---
+function emotionalCheckin() {
+  const phrase = random(emotionalPhrases);
+  const form = `
+    <p>🧠 ¿Cómo te sientes ahora?</p>
+    <select id="emocion">
+      <option value="😌 Bien, con energía">😌 Bien, con energía</option>
+      <option value="😐 Cansado">😐 Cansado</option>
+      <option value="😫 Estresado">😫 Estresado</option>
+      <option value="😔 Falta de motivación">😔 Falta de motivación</option>
+      <option value="😢 Triste">😢 Triste</option>
+      <option value="😵 Ansiedad / Tensión física">😵 Ansiedad / Tensión física</option>
+    </select><br>
+    <p>🤝 Un Amigo te pregunta: ¿Por qué te sientes así?</p>
+    <textarea id="razon"></textarea><br>
+    <p>🧠 Dale un consejo a tu 'yo amigo':</p>
+    <textarea id="consejo"></textarea><br>
+    <button onclick="saveEmo()">✅ Guardar</button>
+  `;
+  openModal("⏰ Check-in emocional", form);
+  localStorage.setItem("emoPhrase", phrase);
 }
 
-button:hover {
-  background: #0f0;
-  color: #000;
+window.saveEmo = function() {
+  const emocion = document.getElementById("emocion").value;
+  const razon = document.getElementById("razon").value;
+  const consejo = document.getElementById("consejo").value;
+  const phrase = localStorage.getItem("emoPhrase");
+
+  modalBody.innerHTML = `
+    <p>Estado: ${emocion}</p>
+    <p>Motivo: ${razon}</p>
+    <p>Consejo (Amigo): ${consejo}</p>
+    <p>🎲 Frase: ${phrase}</p>
+    <p>🚀 +2 XP desbloqueados</p>
+  `;
+
+  startCountdown();
+  document.getElementById("status").textContent = "✅ Check-in emocional completado.";
+};
+
+// --- Cuenta regresiva estilo arcade ---
+function startCountdown() {
+  let count = 5;
+  countdownEl.textContent = count;
+  const interval = setInterval(() => {
+    count--;
+    countdownEl.textContent = count > 0 ? count : "🚀 ¡Vamos!";
+    if (count <= 0) clearInterval(interval);
+  }, 1000);
 }
 
-input, textarea, select {
-  background: #000;
-  color: #0f0;
-  border: 1px solid #0f0;
-  padding: 6px;
-  margin: 8px 0;
-  width: 90%;
-  font-family: inherit;
-}
+// --- Snooze ---
+document.getElementById("snoozeBtn").addEventListener("click", () => {
+  if (snoozeCount < maxSnoozes) {
+    snoozeCount++;
+    document.getElementById("status").textContent =
+      `⏰ Check-in pospuesto 30 min. (Snooze ${snoozeCount}/${maxSnoozes})`;
+    setTimeout(emotionalCheckin, 30 * 60 * 1000);
+  } else {
+    emotionalCheckin();
+  }
+});
 
-.modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.9);
-  justify-content: center;
-  align-items: center;
-}
+// --- Botones principales ---
+document.getElementById("checkinBtn").addEventListener("click", () => {
+  const log = localStorage.getItem("dailyCheckin");
+  if (!log || JSON.parse(log).date !== new Date().toDateString()) {
+    dailyCheckin();
+  } else {
+    emotionalCheckin();
+  }
+});
 
-.modal-content {
-  background: #111;
-  color: #0f0;
-  border: 2px solid #0f0;
-  padding: 20px;
-  border-radius: 12px;
-  width: 85%;
-  max-width: 450px;
-  text-align: left;
-  box-shadow: 0 0 20px #0f0;
-}
-
-.countdown {
-  text-align: center;
-  font-size: 1.8em;
-  margin-top: 15px;
-  color: #ff0;
-  text-shadow: 0 0 10px #ff0;
-}
+// --- Auto check-in inicial al cargar ---
+window.onload = () => {
+  const log = localStorage.getItem("dailyCheckin");
+  if (!log || JSON.parse(log).date !== new Date().toDateString()) {
+    dailyCheckin();
+  } else {
+    document.getElementById("status").textContent = "✅ Check-in inicial ya registrado.";
+    setInterval(emotionalCheckin, 2 * 60 * 60 * 1000);
+  }
+};
