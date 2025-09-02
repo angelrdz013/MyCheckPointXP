@@ -40,8 +40,8 @@ function dailyCheckin() {
   const phrase = random(dailyPhrases);
   const form = `
     <p>✨ Mensaje del día: ${phrase}</p>
-    <label>📌 Tu intención: <br><input id="intencion"></label><br>
-    <label>🎯 Tu reto: <br><input id="reto"></label><br>
+    <label>📌 Tu intención:<br><input id="intencion"></label><br>
+    <label>🎯 Tu reto:<br><input id="reto"></label><br>
     <button onclick="saveDaily()">✅ Guardar</button>
   `;
   openModal("🌅 Check-in inicial", form);
@@ -74,16 +74,33 @@ function emotionalCheckin() {
       <option value="😢 Triste">😢 Triste</option>
       <option value="😵 Ansiedad / Tensión física">😵 Ansiedad / Tensión física</option>
     </select><br>
-    <p>🤝 Un Amigo te pregunta: ¿Por qué te sientes así?</p>
-    <textarea id="razon"></textarea><br>
-    <p>🧠 Dale un consejo a tu 'yo amigo':</p>
+
+    <p>🤔 ¿Por qué te sientes así?</p>
+    <textarea id="razon" oninput="reflectAmigo()"></textarea><br>
+
+    <p id="amigoReflejo" style="color:#0ff; font-style:italic;"></p>
+
+    <p>🧠 ¿Qué consejo le darías a tu amigo?</p>
     <textarea id="consejo"></textarea><br>
+
     <button onclick="saveEmo()">✅ Guardar</button>
   `;
   openModal("⏰ Check-in emocional", form);
   localStorage.setItem("emoPhrase", phrase);
 }
 
+// --- Reflejo de "Amigo" ---
+window.reflectAmigo = function() {
+  const razon = document.getElementById("razon").value;
+  const amigoReflejo = document.getElementById("amigoReflejo");
+  if (razon.trim() !== "") {
+    amigoReflejo.textContent = `🤝 Un amigo dice: "Me siento ${razon}"`;
+  } else {
+    amigoReflejo.textContent = "";
+  }
+};
+
+// --- Guardar Check-in emocional ---
 window.saveEmo = function() {
   const emocion = document.getElementById("emocion").value;
   const razon = document.getElementById("razon").value;
@@ -92,8 +109,8 @@ window.saveEmo = function() {
 
   modalBody.innerHTML = `
     <p>Estado: ${emocion}</p>
-    <p>Motivo: ${razon}</p>
-    <p>Consejo (Amigo): ${consejo}</p>
+    <p>Amigo: "Me siento ${razon}"</p>
+    <p>Consejo: ${consejo}</p>
     <p>🎲 Frase: ${phrase}</p>
     <p>🚀 +2 XP desbloqueados</p>
   `;
@@ -109,7 +126,10 @@ function startCountdown() {
   const interval = setInterval(() => {
     count--;
     countdownEl.textContent = count > 0 ? count : "🚀 ¡Vamos!";
-    if (count <= 0) clearInterval(interval);
+    if (count <= 0) {
+      clearInterval(interval);
+      modalBody.innerHTML += `<p style="color:#0ff; margin-top:10px;">💪 Bueno, pues hazlo tú!</p>`;
+    }
   }, 1000);
 }
 
