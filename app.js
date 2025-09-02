@@ -14,11 +14,7 @@ const dailyPhrases = [
   "🚀 No tienes que hacerlo perfecto. Solo avanzar.",
 ];
 
-function random(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-
-// --- Preguntas para cada flujo ---
+// --- Preguntas ---
 const flows = {
   inicial: [
     { key: "intencion", text: "📌 ¿Cuál es tu intención para hoy?" },
@@ -89,10 +85,13 @@ function createInput() {
             printLine("> Opción inválida. Escribe 1-6", "#f00");
             return;
           }
-          answers[question.key] = emocionesMap[value].texto;
-          answers["actividad"] = emocionesMap[value].actividad;
-          printLine("> " + emocionesMap[value].texto, "#fff");
-          printLine("💡 Actividad sugerida: " + emocionesMap[value].actividad, "#ff0");
+          const elegido = emocionesMap[value];
+          answers[question.key] = elegido.texto;
+          answers["actividad"] = elegido.actividad;
+
+          // Reimprimir confirmación
+          printLine("> " + elegido.texto, "#fff");
+          printLine("💡 Actividad sugerida: " + elegido.actividad, "#ff0");
         }
         // --- Caso especial: razón reflejada como amigo ---
         else if (currentFlow === "emocional" && question.key === "razon") {
@@ -204,4 +203,8 @@ function resetFlow(flow) {
   step = 0;
   answers = {};
   currentFlow = flow;
+}
+
+function random(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
 }
