@@ -53,3 +53,11 @@ input.console-input {
   flex: 1;
   font-family: inherit;
 }
+
+.countdown-big {
+  font-size: 3em;
+  text-align: center;
+  margin-top: 20px;
+  color: #ff0;
+  text-shadow: 0 0 15px #ff0;
+}
