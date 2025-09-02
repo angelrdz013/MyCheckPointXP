@@ -7,11 +7,11 @@ let answers = {};
 let currentFlow = "";
 
 const dailyPhrases = [
-  "🎯 Hoy también cuenta.",
-  "💪 Tu disciplina le está ganando al caos.",
-  "🧘‍♀️ Tu mente es tu casa. Límpiala con intención.",
-  "🕹️ Cada día es un nuevo nivel. ¡Presiona Start!",
-  "🚀 No tienes que hacerlo perfecto. Solo avanzar.",
+  "🎯 Hoy es el día donde harás grandes cosas.",
+  "💪 Todo empieza por tu y lo que te propones a hacer.",
+  "🧘‍♀️ Tu mente es tu casa. Límpiala todos los días.",
+  "🕹️ Cada día es un nuevo nivel. ¡Desbloquealo!",
+  "🚀 No tienes que hacerlo perfecto. Solo avanzar un paso más.",
 ];
 
 // --- Preguntas ---
@@ -98,12 +98,13 @@ function createInput() {
         else if (currentFlow === "emocional" && question.key === "razon") {
           answers[question.key] = value;
           printLine("> " + value, "#fff");
-          printLine(`🤝 Un amigo dice: "Me siento ${value}"`, "#0ff");
+          printLine(`🤝 Un amigo dice: "${value}"`, "#0ff");
         }
         // --- Normal ---
         else {
           answers[question.key] = value;
           printLine("> " + value, "#fff");
+          printLine("💪 Bueno, pues hazlo tú!", "#0ff");
         }
 
         inputWrapper.remove();
@@ -137,8 +138,6 @@ function finishFlow() {
       printLine("💡 Actividad: " + answers["actividad"], "#ff0");
     }
   }
-
-  printLine("💪 Bueno, pues hazlo tú!", "#0ff");
   printLine("Presiona ENTER para continuar...", "#ff0");
 
   // Esperar Enter para lanzar countdown
