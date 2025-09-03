@@ -8,7 +8,7 @@ let currentFlow = "";
 
 const dailyPhrases = [
   "🎯 Hoy es el día donde harás grandes cosas.",
-  "💪 Todo empieza por tu y lo que te propones a hacer.",
+  "💪 Todo empieza por ti y lo que te propones a hacer.",
   "🧘‍♀️ Tu mente es tu casa. Límpiala todos los días.",
   "🕹️ Cada día es un nuevo nivel. ¡Desbloquealo!",
   "🚀 No tienes que hacerlo perfecto. Solo avanzar un paso más.",
