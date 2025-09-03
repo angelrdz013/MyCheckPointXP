@@ -244,3 +244,33 @@ function resetFlow(flow) {
 function random(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
+// Opcional: Notificación del check-in inicial al iniciar el día
+function scheduleInitialCheckin() {
+  const now = new Date();
+  const initialTime = new Date();
+  initialTime.setHours(8, 0, 0); // Notificación a las 8:00 AM
+
+  if (now > initialTime) {
+    initialTime.setDate(initialTime.getDate() + 1); // Si ya pasaron las 8, la programa para mañana
+  }
+
+  const timeToWait = initialTime.getTime() - now.getTime();
+  setTimeout(() => {
+    showNotification('🌅 ¡Hora del Check-in inicial!', 'Define tu intención y reto para el día.');
+    scheduleInitialCheckin(); // Se auto-programa para el día siguiente
+  }, timeToWait);
+}
+
+// Notificación del check-in emocional cada 2 horas
+function scheduleEmotionalCheckin() {
+  const twoHours = 2 * 60 * 60 * 1000; // 2 horas en milisegundos
+  setInterval(() => {
+    showNotification('🧠 ¡Check-in emocional!', '¿Cómo te sientes en este momento?');
+  }, twoHours);
+}
+
+// Llama a las funciones para iniciar los recordatorios
+window.addEventListener('load', () => {
+  scheduleInitialCheckin();
+  scheduleEmotionalCheckin();
+});
