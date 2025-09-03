@@ -129,9 +129,12 @@ function finishFlow() {
     answers["frase"] = phrase; // guardar también
     printLine("✅ ¡Check-in inicial completado!", "#0f0");
     printLine("✨ Mensaje del día: " + phrase, "#ff0");
-    }
   }
-  printLine("✅ ¡Check-in emocional completado!", "#0f0");
+
+  if (currentFlow === "emocional") {
+    printLine("✅ ¡Check-in emocional completado!", "#0f0");
+  }
+
   printLine("Presiona ENTER para continuar...", "#ff0");
 
   // Esperar Enter para lanzar countdown
