@@ -1,3 +1,19 @@
+// Agrega esta función al inicio de tu app.js
+async function requestNotificationPermission() {
+  const permission = await Notification.requestPermission();
+  if (permission === 'granted') {
+    console.log('🔔 Permiso de notificación concedido.');
+  } else {
+    console.warn('🚫 Permiso de notificación denegado.');
+  }
+}
+
+// Llama a la función al cargar la página o cuando el usuario interactúe
+window.addEventListener('load', () => {
+  // Opcional: Llama a esta función después de que el Service Worker se registre para pedir permiso
+  requestNotificationPermission();
+});
+
 const terminal = document.getElementById("terminal");
 const btnInicial = document.getElementById("startInicial");
 const btnEmocional = document.getElementById("startEmocional");
