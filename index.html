@@ -17,12 +17,12 @@
   <div id="terminal" class="terminal hidden"></div>
 
   <script src="app.js"></script>
-  <script>
+<script>
   // Verifica si el navegador soporta Service Workers
   if ('serviceWorker' in navigator) {
-    // Registra tu Service Worker
+    // Registra tu Service Worker con la ruta correcta
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
+      navigator.serviceWorker.register('/MyCheckPointXP/service-worker.js')
         .then(registration => {
           console.log('✅ Service Worker registrado con éxito. Scope:', registration.scope);
         })
