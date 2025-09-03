@@ -1,3 +1,16 @@
+function showNotification(title, body) {
+  // Asegúrate de que el navegador soporte notificaciones
+  if ('Notification' in window) {
+    Notification.requestPermission().then(permission => {
+      if (permission === 'granted') {
+        new Notification(title, {
+          body: body,
+          icon: 'https://angelrdz013.github.io/MyCheckPointXP/favicon.ico'
+        });
+      }
+    });
+  }
+}
 // Agrega esta función al inicio de tu app.js
 async function requestNotificationPermission() {
   const permission = await Notification.requestPermission();
