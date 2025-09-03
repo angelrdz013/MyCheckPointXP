@@ -99,13 +99,15 @@ function createInput() {
           printLine("> " + value, "#fff");
           printLine(`🤝 Un amigo dice: "${value}"`, "#0ff");
         }
-        // --- Normal ---
         else {
           answers[question.key] = value;
           printLine("> " + value, "#fff");
-          printLine("💪 Bueno, pues hazlo tú!", "#0ff");
-        }
 
+        // Solo en el check-in emocional al dar el consejo
+        if (currentFlow === "emocional" && question.key === "consejo") {
+        printLine("💪 Bueno, pues hazlo tú!", "#0ff");
+        }
+      }
         inputWrapper.remove();
         step++;
         if (step < flows[currentFlow].length) {
