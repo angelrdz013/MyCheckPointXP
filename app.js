@@ -263,7 +263,7 @@ function scheduleInitialCheckin() {
 
 // Notificación del check-in emocional cada 2 horas
 function scheduleEmotionalCheckin() {
-  const twoHours = 2 * 60 * 60 * 1000; // 2 horas en milisegundos
+  const twoHours = 2 * 60 * 1000; // 2 horas en milisegundos
   setInterval(() => {
     showNotification('🧠 ¡Check-in emocional!', '¿Cómo te sientes en este momento?');
   }, twoHours);
